@@ -66,9 +66,15 @@ class BooksController < ApplicationController
   
 
   def return_book
-    book = Book.find(params[:id])
+    book = Book.find_by(id: params[:book_id])  # Ensure correct param name
+    
+    if book.nil?
+      render json: { error: 'Book not found' }, status: :not_found
+      return
+    end
+  
     borrowing = Borrowing.find_by(book: book, user: current_user)
-
+  
     if borrowing.nil?
       render json: { error: 'You have not borrowed this book' }, status: :unprocessable_entity
     else
@@ -77,6 +83,7 @@ class BooksController < ApplicationController
       render json: { message: 'Book returned successfully' }, status: :ok
     end
   end
+  
 
   private
 
