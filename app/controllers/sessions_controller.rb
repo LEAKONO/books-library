@@ -1,20 +1,22 @@
 class SessionsController < ApplicationController
+  skip_forgery_protection only: [:create]  
+
   def new
   end
 
   def create
     user = User.find_by(email: params[:email])
+
     if user&.authenticate(params[:password])
       session[:user_id] = user.id
-      redirect_to root_path, notice: "Logged in successfully!"
+      render json: { message: "Logged in successfully!", user: user }, status: :ok
     else
-      flash.now[:alert] = "Invalid email or password"
-      render :new
+      render json: { error: "Invalid email or password" }, status: :unauthorized
     end
   end
 
   def destroy
     session[:user_id] = nil
-    redirect_to root_path, notice: "Logged out successfully!"
+    render json: { message: "Logged out successfully!" }, status: :ok
   end
 end
