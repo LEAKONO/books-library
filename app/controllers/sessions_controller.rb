@@ -4,7 +4,8 @@ class SessionsController < ApplicationController
 
     if user&.authenticate(params[:password])
       # Encode a JWT token with the user ID
-      token = encode_token(user_id: user.id)
+      payload = { user_id: user.id }
+      token = encode_token(payload)
       render json: { message: "Logged in successfully!", token: token }, status: :ok
     else
       render json: { error: "Invalid email or password" }, status: :unauthorized
@@ -12,7 +13,6 @@ class SessionsController < ApplicationController
   end
 
   def destroy
-    # In a stateless JWT setup, no need to invalidate the token, but you could optionally handle it here if necessary
     render json: { message: "Logged out successfully!" }, status: :ok
   end
 

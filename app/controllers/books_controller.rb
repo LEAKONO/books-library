@@ -1,5 +1,6 @@
 class BooksController < ApplicationController
-  before_action :authenticate_user!, only: [:borrow, :return_book, :create]  # Protect the create action
+  # Only protect borrow and return actions, allow book creation without auth
+  before_action :authenticate_user!, only: [:borrow, :return_book]
 
   def index
     books = Book.all
@@ -7,7 +8,12 @@ class BooksController < ApplicationController
   end
 
   def show
-    render json: @book
+    book = Book.find_by(id: params[:id])  # Fetch by ID to avoid nil errors
+    if book
+      render json: book, status: :ok
+    else
+      render json: { error: 'Book not found' }, status: :not_found
+    end
   end
 
   def create
@@ -21,20 +27,48 @@ class BooksController < ApplicationController
   end
 
   def borrow
-    book = Book.find(params[:id])
+    Rails.logger.info "Params received: #{params.inspect}"
+  
+    book = Book.find_by(id: params[:book_id])  # Ensure book_id is used
+  
+    if book.nil?
+      Rails.logger.error "Book not found"
+      return render json: { error: 'Book not found' }, status: :not_found
+    end
+  
     if book.borrowed?
-      render json: { error: 'Book already borrowed' }, status: :unprocessable_entity
-    else
+      Rails.logger.error "Book is already borrowed"
+      return render json: { error: 'Book already borrowed' }, status: :unprocessable_entity
+    end
+  
+    if current_user.nil?
+      Rails.logger.error "Unauthorized access attempt"
+      return render json: { error: 'Unauthorized user' }, status: :unauthorized
+    end
+  
+    borrowing = Borrowing.new(
+      book: book,
+      user: current_user,
+      due_date: 2.weeks.from_now,
+      returned: false # Ensure `returned` field is included
+    )
+  
+    if borrowing.save
       book.update(borrowed: true)
-      Borrowing.create(book: book, user: @current_user, due_date: 2.weeks.from_now)
-      render json: { message: 'Book borrowed successfully' }, status: :ok
+      Rails.logger.info "Borrowing record created successfully: #{borrowing.inspect}"
+      render json: { message: 'Book borrowed successfully', borrowing: borrowing }, status: :ok
+    else
+      Rails.logger.error "Failed to create borrowing record: #{borrowing.errors.full_messages}"
+      render json: { error: borrowing.errors.full_messages }, status: :unprocessable_entity
     end
   end
+  
+  
 
   def return_book
     book = Book.find(params[:id])
-    borrowing = Borrowing.find_by(book: book, user: @current_user)
-    
+    borrowing = Borrowing.find_by(book: book, user: current_user)
+
     if borrowing.nil?
       render json: { error: 'You have not borrowed this book' }, status: :unprocessable_entity
     else
@@ -47,6 +81,6 @@ class BooksController < ApplicationController
   private
 
   def book_params
-    params.require(:book).permit(:title, :author, :isbn)  # Only allow the necessary fields
+    params.require(:book).permit(:title, :author, :isbn)
   end
 end
