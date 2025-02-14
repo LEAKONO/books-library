@@ -1,19 +1,11 @@
 Rails.application.routes.draw do
-  get "books/index"
-  get "books/show"
-  root "books#index"
+  resources :users, only: [:create]   # User registration route
+  post '/login', to: 'sessions#create'  # Login route
 
-  # Authentication routes
-  get "signup", to: "registrations#new"
-  post "signup", to: "registrations#create"
-  get "login", to: "sessions#new"
-  post "login", to: "sessions#create"
-  delete "logout", to: "sessions#destroy"
-
-  # Book and borrowing routes
-  resources :books, only: [:index, :show] do
-    post "borrow", on: :member
-    post "return", on: :member
+  resources :books, only: [:index, :show, :create] do  # Add create route here
+    post 'borrow', to: 'books#borrow'
+    post 'return', to: 'books#return_book'
   end
-  resources :borrowings, only: [:index]
+
+  get 'profile', to: 'profiles#show'  # Protected route: User profile (borrowed books)
 end
