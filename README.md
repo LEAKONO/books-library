@@ -51,10 +51,10 @@ This is a **Book Lending Library** built using **Ruby on Rails 8**. It allows us
    ```
    http://localhost:3000
    ```
-
 ## Screenshots
-![Screenshot ](https://github.com/LEAKONO/books-library/issues/1)
+Click [here](https://github.com/LEAKONO/books-library/issues/1) to view screenshots using Postman.
 
+![Screenshot](https://github.com/LEAKONO/books-library/issues/1)
 
 
 ## API Endpoints
