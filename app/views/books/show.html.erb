@@ -1,13 +1,19 @@
-<h1><%= @book.title %></h1>
-<p>Author: <%= @book.author %></p>
-<p>ISBN: <%= @book.isbn %></p>
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= @book.title %></title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { color: #333; }
+    p { font-size: 16px; }
+    a { text-decoration: none; color: blue; display: block; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1><%= @book.title %></h1>
+  <p><strong>Author:</strong> <%= @book.author %></p>
+  <p><strong>ISBN:</strong> <%= @book.isbn %></p>
 
-<% if @book.borrowed? %>
-  <p>This book is currently borrowed.</p>
-<% else %>
-  <%= button_to "Borrow", borrow_book_path(@book), method: :post %>
-<% end %>
-
-<% if current_user&.books&.include?(@book) %>
-  <%= button_to "Return", return_book_path(@book), method: :post %>
-<% end %>
+  <a href="/books">Back to Book List</a>
+</body>
+</html>
