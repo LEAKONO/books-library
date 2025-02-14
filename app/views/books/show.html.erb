@@ -1,0 +1,13 @@
+<h1><%= @book.title %></h1>
+<p>Author: <%= @book.author %></p>
+<p>ISBN: <%= @book.isbn %></p>
+
+<% if @book.borrowed? %>
+  <p>This book is currently borrowed.</p>
+<% else %>
+  <%= button_to "Borrow", borrow_book_path(@book), method: :post %>
+<% end %>
+
+<% if current_user&.books&.include?(@book) %>
+  <%= button_to "Return", return_book_path(@book), method: :post %>
+<% end %>

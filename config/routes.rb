@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  get "books/index"
+  get "books/show"
   root "books#index"
 
   # Authentication routes
